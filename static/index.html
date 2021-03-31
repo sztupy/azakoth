@@ -118,7 +118,8 @@ end</textarea>
                 <h4>Simple gatherer robot</h4>
 
                 <p>The following code will try to move to the first bitcoin in the coins array. Once it is picked up it will try to get
-                  back to HQ. Will try to randomly move/hit to try to get further and not get blocked</p>
+                  back to HQ. Will try to randomly move/hit to try to get further and not get blocked. It will also save the contents
+                  of it's inventory to the memory so it appears in the control panel.</p>
 
                 <textarea>team_id = data[:team_id]
 robot_id = data[:robot_id]
@@ -137,22 +138,22 @@ current_x = robot[:x]
 current_y = robot[:y]
 
 result = if current_x &gt; dest_x
-  ['left']
+  'left'
 elsif current_x &lt; dest_x
-  ['right']
+  'right'
 else
   if current_y &gt; dest_y
-    ['up']
+    'up'
   elsif current_y &lt; dest_y
-    ['down']
+    'down'
   end
 end
 
 if rand > 0.9 then
-  result[0] = result[0].upcase
+  result = result.upcase
 end
 
-return result</textarea>
+return [result,nil,[inventory]]</textarea>
 
                 <p>And in JavaScript:</p>
 
@@ -189,7 +190,7 @@ if (Math.random() > 0.9) {
   result = result.toUpperCase();
 }
 
-return [result];</textarea>
+return [result, null, [inventory]];</textarea>
 
                   <h3>Specification</h3>
 
@@ -289,6 +290,12 @@ return [result];</textarea>
 						<!-- Scores -->
 							<article id="scores">
 								<h2 class="major">Scores</h2>
+
+                <h3>Time</h3>
+
+                <p>Time remaining: <span id="time_remaining"></span></p>
+
+                <h3>Points</h3>
 
 								<ul>
 									<li>Team Red: <span id="score_0"></span></li>

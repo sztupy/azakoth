@@ -38,6 +38,17 @@ exampleSocket.onopen = function (event) {
 exampleSocket.onmessage = function (event) {
     var data = JSON.parse(event.data);
     if (data.type === 'map') {
+
+        if (data.time) {
+            var remaining = document.getElementById('time_remaining');
+            var str = '';
+            str += (''+Math.floor(data.time/60)).padStart(2,'0');
+            str += ':';
+            str += (''+(Math.floor(data.time)%60)).padStart(2,'0');
+
+            remaining.textContent = str;
+        }
+
         if (data.scores) {
             for (var i=0; i< data.scores.length; i++) {
                 var score = document.getElementById('score_' + i);

@@ -22,18 +22,22 @@ when 2 then
   WALLS = false
   STEALING = false
   TICK_LENGTH = 0.5
+  TIME = 15*60
 when 3 then
   WALLS = true
   STEALING = false
   TICK_LENGTH = 0.25
+  TIME = 10*60
 when 4 then
   WALLS = true
   STEALING = true
   TICK_LENGTH = 0.1
+  TIME = 5*60
 else
   WALLS = false
   STEALING = false
   TICK_LENGTH = 1
+  TIME = 20*60
 end
 
 PLAYER_CODES = [
@@ -51,6 +55,7 @@ class Map
     @score = [0, 0, 0]
     @walls = []
     @error_log = []
+    @start_time = Time.new
 
     if WALLS
       (0...5).each do |i|
@@ -241,14 +246,19 @@ class Map
     }
   end
 
-  def send(ws, team_id)
-    ws.send({
+  def get_send_data(team_id)
+    {
       type: 'map',
       data: gen_map,
       scores: @score,
       internal: @players_internal[team_id].map{|r| [r[0], r[1]] },
-      errors: @error_log[team_id]
-    }.to_json)
+      errors: @error_log[team_id],
+      time: TIME - (Time.new - @start_time)
+    }
+  end
+
+  def send(ws, team_id)
+    ws.send(get_send_data(team_id).to_json)
   end
 
   def send_codes(ws, team_id)
@@ -331,6 +341,16 @@ $map = Map.new
 
 EM.run do
   $map.start_runners
+
+  EventMachine::PeriodicTimer.new(1) do
+    data = $map.get_send_data(0)
+    p data[:time]
+    if data[:time] < 0
+      puts 'Finished';
+      p data[:scores]
+      EventMachine::stop_event_loop
+    end
+  end
 
   WebSocket::EventMachine::Server.start(:host => "0.0.0.0", :port => 8080) do |ws|
     timer = nil
