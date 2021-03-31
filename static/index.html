@@ -1,0 +1,334 @@
+<!DOCTYPE HTML>
+<!--
+	Dimension by HTML5 UP
+	html5up.net | @ajlkn
+	Free for personal and commercial use under the CCA 3.0 license (html5up.net/license)
+-->
+<html>
+	<head>
+		<title>AZA Engineering King of the Hill</title>
+		<meta charset="utf-8" />
+		<meta name="viewport" content="width=device-width, initial-scale=1" />
+		<link rel="stylesheet" href="assets/css/main.css" />
+		<link rel="stylesheet" href="assets/css/codemirror.css">
+		<noscript><link rel="stylesheet" href="assets/css/noscript.css" /></noscript>
+
+		<link rel="manifest" href="site.webmanifest">
+		<link rel="apple-touch-icon" href="icon.png">
+	</head>
+	<body class="is-preload">
+
+		<!-- Wrapper -->
+			<div id="wrapper">
+
+				<!-- Header -->
+					<header id="header">
+						<div class="logo">
+							<span class="icon fas fa-crown"></span>
+						</div>
+						<div class="content">
+							<div class="inner">
+								<h1>AZA King of the Hill</h1>
+								<p>A competitive bitcoin gathering game</p>
+							</div>
+						</div>
+						<nav>
+							<ul>
+								<li><a href="#intro">Intro</a></li>
+								<li><a href="#map">Map</a></li>
+								<li><a href="#scores">Scores</a></li>
+								<li><a href="#controls">Controls</a></li>
+							</ul>
+						</nav>
+					</header>
+
+				<!-- Main -->
+					<div id="main">
+
+						<!-- Intro -->
+							<article id="intro">
+								<h2 class="major">Instructions</h2>
+
+                <h3>Basics</h3>
+
+                <p>The game is played on a 25x25 grid. On this grid there are three teams all having one headquarters and 20 robots at their disposal.
+                  Also on the map are 20 bitcoins scattered around. Each team's purpose is to collect as many bitcoins as possible,
+                  and bring them to their headquarters.</p>
+
+                <p>Each team's robots are controlled by a simple code, detailed below. You can change this code for each robot separately in the Control Panel.
+                  Once you write the code and install it onto the robot by pressing one of the install buttons, the robot will use that code to do their action.
+                </p>
+
+                <p>At each tick a robot can take one of the following two actions:</p>
+
+                <ul>
+                  <li>Move: they can try to move to one of the adjacent squares. They can only move if the square is either empty, or only contains bitcoins.
+                    If the sqare contains bitcoins the robot will pick them up and add their value to it's inventory.</li>
+                  <li>Kick: a robot can also try to kick another robot (both friend and foe) that is in one of the adjacent squares. If it hits, the offending
+                    robot will be thrown into the air and will land in a random location somewher on the map freeing up the space.</li>
+                </ul>
+
+                <p>Each robot's inventory has unlimited capacity to hold bitcoins, but the team will only score points if the robot
+                  goes back to the team's headquarters touching the base. Bitcoins are always replenished on the map once one is picked up
+                  - there will always be 20 bitcoins scattered around</p>
+
+                <p>While every robot can hold a code as complex as possible, they can only persist two things between calls.</p>
+                <ul>
+                  <li>Each robot has a "state", a number between 0-9. A robot at the end of it's run can chose what state they want to start the next run. The control panel also allows manual control of these states by pressing one of the buttons.</li>
+                  <li>Each robot also has a limited persistent memory, where they can hold up to 8 integers, that they will be able to access the next time the code runs. The contents of the memory will also be visible in the control panel.</li>
+                </ul>
+
+                <p>Don't forget the control panel is shared between everyone in the team. Once you install a code for a specific robot it will override the code for that robot.
+                  Also note that codes of the robots are not automatically updated if they change, refreshing the page will however always obtain the latest code</p>
+
+                <p>Also note there will be multiple rounds of the game, and the robot's memories are reset between runs. You should make sure to save your code outside the control panel between the rounds.</p>
+
+                <h3>Examples</h3>
+
+                <p>These are some examples to get you started quickly. The more detailed specification follows later</p>
+
+                <h4>Manual control robot</h4>
+
+                <p>The following code will allow you to manually drive the robot with the buttons on the control panel:</p>
+
+                <textarea>case data[:state]
+  when 1 then return ['left']
+  when 2 then return ['up']
+  when 3 then return ['down']
+  when 4 then return ['right']
+  when 6 then return ['LEFT']
+  when 7 then return ['UP']
+  when 8 then return ['DOWN']
+  when 9 then return ['RIGHT']
+end</textarea>
+
+                <p>Same code in JavaScript</p>
+
+                <textarea>switch (data['state']) {
+  case 1: return ['left'];
+  case 2: return ['up'];
+  case 3: return ['down'];
+  case 4: return ['right'];
+  case 6: return ['LEFT'];
+  case 7: return ['UP'];
+  case 8: return ['DOWN'];
+  case 9: return ['RIGHT'];
+}</textarea>
+
+                <h4>Simple gatherer robot</h4>
+
+                <p>The following code will try to move to the first bitcoin in the coins array. Once it is picked up it will try to get
+                  back to HQ. Will try to randomly move/hit to try to get further and not get blocked</p>
+
+                <textarea>team_id = data[:team_id]
+robot_id = data[:robot_id]
+robot = data.dig(:robots,team_id,robot_id)
+inventory = robot[:inv]
+
+if inventory == 0
+  dest_x = data.dig(:coins, 0, :x)
+  dest_y = data.dig(:coins, 0, :y)
+else
+  dest_x = data.dig(:hqs, team_id, :x)
+  dest_y = data.dig(:hqs, team_id, :y)
+end
+
+current_x = robot[:x]
+current_y = robot[:y]
+
+result = if current_x &gt; dest_x
+  ['left']
+elsif current_x &lt; dest_x
+  ['right']
+else
+  if current_y &gt; dest_y
+    ['up']
+  elsif current_y &lt; dest_y
+    ['down']
+  end
+end
+
+if rand > 0.9 then
+  result[0] = result[0].upcase
+end
+
+return result</textarea>
+
+                <p>And in JavaScript:</p>
+
+                <textarea>var team_id = data['team_id'];
+var robot_id = data['robot_id'];
+var robot = data['robots'][team_id][robot_id];
+var inventory = robot['inv'];
+
+if (inventory === 0) {
+  var dest_x = data['coins'][0]['x'];
+  var dest_y = data['coins'][0]['y'];
+} else {
+  var dest_x = data['hqs'][team_id]['x'];
+  var dest_y = data['hqs'][team_id]['y'];
+}
+
+var current_x = robot['x'];
+var current_y = robot['y'];
+
+var result = '';
+if (current_x > dest_x) {
+  result = 'left';
+} else if (current_x < dest_x) {
+  result = 'right';
+} else {
+  if (current_y > dest_y) {
+    result = 'up';
+  } else if (current_y < dest_y) {
+    result = 'down';
+  }
+}
+
+if (Math.random() > 0.9) {
+  result = result.toUpperCase();
+}
+
+return [result];</textarea>
+
+                  <h3>Specification</h3>
+
+                  <h4>Input</h4>
+
+                  <p>Each robots can be controlled by ruby or javascript code. Regardless which you chose the input is a hash called <code>data</code> with the following contents:</p>
+
+                  <textarea>{
+  # The team's ID.
+  # (0-2; Red is 0, Green is 1, Blue is 2)
+  team_id: 0,
+
+  # The robot's ID you are controlling right now
+  # (0-19)
+  robot_id: 10,
+
+  # The robot's controllable state
+  # (0-9).
+  #
+  # This can be controlled manually using the
+  # "control panel" for each robot
+  state: 0,
+
+  # The robot's persistent memory.
+  # You can use this to save data between calls.
+  # This is an array containing at most
+  # 8 integer values.
+  memory: [0,15,25],
+
+
+  # The map of the world, an array of 25x25 elements
+  # map[x][y] contains what's in row `y` and
+  # column `x`, starting from top-left
+  map: [
+
+    # the following are the values you would get if
+    # the appropriate box contains a...
+    [ # Empty box
+      { t: ' ' },
+      # HQ
+      { t: 'H', team: 0 }
+      # Robot, inv is the inventory contents
+      { t: 'R', team: 0, id: 10, inv: 0 },
+      # Bitcoin
+      { t: 'B', value: 4 },
+      # Wall
+      { t: 'X' },
+      (...)
+    ], (...)
+  ],
+
+  # the list of HQs, where team 0's HQ is at hqs[0]
+  hqs: [ {x: 0, y:0 }, (...) ],
+
+  # the list of all robots in the game.
+  # robots[team_id][robot_id] contains the x, y
+  # coordinates and the inventory
+  robots: [
+    [ { x: 10, y:5, inv: 5 }, (...) ],
+    (...)
+  ],
+
+  # the list of all coins on the map, with their
+  # coordinates and values
+  coins: [ { x:15, y: 12, value: 5}, (...) ]
+}</textarea>
+
+                <h4>Output</h4>
+
+                <p>A successful program has to return an array of values. The first value is mandatory, the others are optional</p>
+                <ul>
+                  <li>First value is the action the robot should take; There are 8 options:
+                    <ul>
+                      <li><code>'left'</code>,<code>'up'</code>,<code>'down'</code>,<code>'right'</code>: moves to this location if it's empty. If the place is not empty it will not move,
+                        except if the place contains a BTC in which case it will move there and pick up the BTC. You cannot move to
+                        a location where there is another robot, a wall or a HQ</li>
+                      <li><code>'LEFT'</code>,<code>'UP'</code>,<code>'DOWN'</code>,<code>'RIGHT'</code>: hits the robot at the appropriate location. If a robot is at that point it
+                        will be hit and teleported to a random location. The current robot will not move, only hit at the direction mentioned</li>
+                    </ul>
+                  </li>
+                  <li>The second value is the new state the robot should be in. It is a number between 0-9.
+                    This value can be overridden in the control panel manually as well. Setting this to <code>nil / null</code> will not change the value</li>
+                  <li>The third value is the memory of the robot you wish to persist before the next run. This is an array of at
+                    most 8 integers, that the next run will receive in the memory input. Setting this to <code>nil / null</code> will not change the value</li>
+                </ul>
+
+                <p>An example response is <code>['up']</code>. This will tell the robot to move upwards</p>
+                <p>A more complete response is <code>['down',2,[0,1,5]]</code>. This will tell the robot to move downwards. It will also change the state of the robot to number 2, and will set it's memory to <code>[0,1,5]</code>, which will appear during the next call in the <code>memory</code> part of the hash</p>
+							</article>
+
+						<!-- Map -->
+							<article id="map">
+								<h2 class="major">Map</h2>
+								<svg id="map_canvas" viewBox="0 0 501 501"></svg>
+							</article>
+
+						<!-- Scores -->
+							<article id="scores">
+								<h2 class="major">Scores</h2>
+
+								<ul>
+									<li>Team Red: <span id="score_0"></span></li>
+									<li>Team Green: <span id="score_1"></span></li>
+									<li>Team Blue: <span id="score_2"></span></li>
+								</ul>
+							</article>
+
+						<!-- Controls -->
+							<article id="controls">
+								<h2 class="major">Control Panel</h2>
+                <h3>Select robot</h3>
+                <div id="controls_div"></div>
+							</article>
+					</div>
+
+				<!-- Footer -->
+					<footer id="footer">
+						<p class="copyright">&copy; AZA. Design: <a href="https://html5up.net">HTML5 UP</a>.</p>
+					</footer>
+
+			</div>
+
+		<!-- BG -->
+			<div id="bg"></div>
+
+		<!-- Scripts -->
+			<script src="assets/js/jquery.min.js"></script>
+			<script src="assets/js/browser.min.js"></script>
+			<script src="assets/js/breakpoints.min.js"></script>
+			<script src="assets/js/util.js"></script>
+			<script src="assets/js/main.js"></script>
+
+			<script src="assets/js/vendor/modernizr-3.11.2.min.js"></script>
+			<script src="assets/js/codemirror.js"></script>
+      <script src="assets/js/autorefresh.js"></script>
+			<script src="assets/js/ruby.js"></script>
+			<script src="assets/js/javascript.js"></script>
+			<script src="assets/js/plugins.js"></script>
+			<script src="assets/js/data.js"></script>
+
+	</body>
+</html>

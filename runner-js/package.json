@@ -1,0 +1,10 @@
+{
+  "name": "runner-js",
+  "version": "1.0.0",
+  "description": "",
+  "main": "runner.js",
+  "bin": "./runner.js",
+  "keywords": [],
+  "author": "",
+  "license": "ISC"
+}

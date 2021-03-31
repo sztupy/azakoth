@@ -1,0 +1,14 @@
+function test(a) {
+  if (a == 1)
+    return ['up'];
+  else
+    return ['down'];
+  end
+}
+
+return test(data.robot_id);
+__END__CODE__
+{"team_id":"","robot_id":"","state":"","memory":"","map":"","hqs":"","robots":"","coins":""}
+{"team_id":"","robot_id":1,"state":"","memory":"","map":"","hqs":"","robots":"","coins":""}
+junk
+{"team_id":"","robot_id":"","state":"","memory":"","map":"","hqs":"","robots":"","coins":""}

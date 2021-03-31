@@ -1,0 +1,14 @@
+def test(a)
+  if a == 1
+    ['up']
+  else
+    ['down']
+  end
+end
+
+test(robot_id)
+__END__CODE__
+{"team_id":"","robot_id":"","state":"","memory":"","map":"","hqs":"","robots":"","coins":""}
+{"team_id":"","robot_id":1,"state":"","memory":"","map":"","hqs":"","robots":"","coins":""}
+junk
+{"team_id":"","robot_id":"","state":"","memory":"","map":"","hqs":"","robots":"","coins":""}
